@@ -1,0 +1,16 @@
+numpy==1.23.5
+pandas==1.5.3
+scipy==1.10.0
+scikit-learn==1.2.1
+pytest
+seaborn
+matplotlib
+google-cloud-storage
+tensorflow==2.10.0; sys_platform != 'darwin' # Windows & Ubuntu Intel chips
+mlflow==2.1.1
+python-dotenv
+prefect==2.8.1
+psycopg2-binary
+biopython
+obonet
+networkx
