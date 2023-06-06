@@ -17,4 +17,4 @@
 
    y = GO(MF,BP,CC)
 
-   **<u>Important note</u> **:  *GO terms are hierarchical.*
+   <u>Important note</u>:  *GO terms are hierarchical.*
