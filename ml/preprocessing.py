@@ -14,7 +14,7 @@ def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_term
                     ) -> pd.DataFrame : # encoded target
 
                     # Take value counts in descending order and fetch first 1500 `GO term ID` as labels
-                    labels = train_terms['term'].value_counts().index[:NUM_OF_LABELS].tolist()
+                    labels = train_terms['term'].value_counts().index[:NUM_OF_LABELS].to_numpy()
 
                     # Fetch the train_terms data for the relevant labels only
                     train_terms_updated = train_terms.loc[train_terms['term'].isin(labels)]
@@ -45,8 +45,5 @@ def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_term
 
                     # Notify the end of progress bar
                     bar.finish()
-
-                    # Convert train_Y numpy into pandas dataframe
-                    labels_df = pd.DataFrame(data = train_labels, columns = labels)
 
                     return train_labels, labels
