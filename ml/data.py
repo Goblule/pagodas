@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import obonet
 import networkx
@@ -58,3 +59,9 @@ def load_raw_data_local(RAW_DATA_DIR: str) -> tuple :
     graph_go, dict_go = read_obo_file(obo_file)
 
     return train_terms, train_seq, graph_go, dict_go
+
+def get_data_with_cache(cache_path) -> np.array:
+  print(f"\nLoading data from local npy file {cache_path} ...")
+  array = np.load(cache_path,allow_pickle=True)
+  print(f"✅ Data loaded, with shape {array.shape}")
+  return array
