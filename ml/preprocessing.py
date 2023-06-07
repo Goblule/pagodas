@@ -6,6 +6,7 @@ import seaborn as sns
 import progressbar
 
 from Bio import SeqIO
+
 from params import *
 
 def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_terms.tsv file
@@ -15,6 +16,7 @@ def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_term
 
                     # Take value counts in descending order and fetch first 1500 `GO term ID` as labels
                     labels = train_terms['term'].value_counts().index[:NUM_OF_LABELS].to_numpy()
+
 
                     # Fetch the train_terms data for the relevant labels only
                     train_terms_updated = train_terms.loc[train_terms['term'].isin(labels)]
@@ -28,6 +30,7 @@ def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_term
 
                     # Loop through each label
                     for i in range(NUM_OF_LABELS):
+
 
                       # For each label, fetch the corresponding train_terms data
                       n_train_terms = train_terms_updated[train_terms_updated['term'] ==  labels[i]]
