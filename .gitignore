@@ -1,5 +1,6 @@
 raw_data/
 .python-version
 pagodas.egg-info/
+__pycache__
 .env
 .envrc
