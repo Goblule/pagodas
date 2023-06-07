@@ -47,18 +47,14 @@ def read_obo_file(obo_file: str) -> tuple :
 
     return graph, id_to_name
 
+
 # load raw data
 def load_raw_data_local(RAW_DATA_DIR: str) -> tuple :
-
     train_terms_file = Path(RAW_DATA_DIR).joinpath("train_terms.tsv")
     train_seq_file = Path(RAW_DATA_DIR).joinpath("train_sequences.fasta")
-    obo_file = Path(RAW_DATA_DIR).joinpath("go-basic.obo")
-
     train_terms = pd.read_csv(train_terms_file,sep='\t')
     train_seq = read_fasta_file(train_seq_file)
-    graph_go, dict_go = read_obo_file(obo_file)
-
-    return train_terms, train_seq, graph_go, dict_go
+    return train_terms, train_seq
 
 def get_data_with_cache(cache_path) -> np.array:
   print(f"\nLoading data from local npy file {cache_path} ...")
