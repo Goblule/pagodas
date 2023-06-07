@@ -6,28 +6,28 @@ import seaborn as sns
 import progressbar
 
 from Bio import SeqIO
-
+from params import *
 
 def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_terms.tsv file
                     series_train_protein_ids: pd.Series, # series containing the unique proteins IDs
-                    num_of_labels: int, # number of most frequent GO term IDs
+                    NUM_OF_LABELS: int, # number of most frequent GO term IDs
                     ) -> pd.DataFrame : # encoded target
 
                     # Take value counts in descending order and fetch first 1500 `GO term ID` as labels
-                    labels = train_terms['term'].value_counts().index[:num_of_labels].tolist()
+                    labels = train_terms['term'].value_counts().index[:NUM_OF_LABELS].tolist()
 
                     # Fetch the train_terms data for the relevant labels only
                     train_terms_updated = train_terms.loc[train_terms['term'].isin(labels)]
 
                     train_size = len(series_train_protein_ids) # 142246
-                    train_labels = np.zeros((train_size,num_of_labels))
+                    train_labels = np.zeros((train_size,NUM_OF_LABELS))
 
                     # Setup progressbar settings
-                    bar = progressbar.ProgressBar(maxval=num_of_labels, \
+                    bar = progressbar.ProgressBar(maxval=NUM_OF_LABELS, \
                                                   widgets=[progressbar.Bar('=', 'Encoding Target [', ']'), ' ', progressbar.Percentage()])
 
                     # Loop through each label
-                    for i in range(num_of_labels):
+                    for i in range(NUM_OF_LABELS):
 
                       # For each label, fetch the corresponding train_terms data
                       n_train_terms = train_terms_updated[train_terms_updated['term'] ==  labels[i]]
@@ -49,4 +49,4 @@ def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_term
                     # Convert train_Y numpy into pandas dataframe
                     labels_df = pd.DataFrame(data = train_labels, columns = labels)
 
-                    return labels_df
+                    return train_labels, labels
