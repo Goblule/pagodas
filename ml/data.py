@@ -9,7 +9,6 @@ from pathlib import Path
 from params import *
 from google.cloud import storage
 
-
 def read_fasta_file(train_seq_file: str) -> pd.DataFrame:
 
     with open(train_seq_file) as fastafile:
@@ -72,8 +71,15 @@ def load_raw_data() -> tuple :
         bucket = client.get_bucket(BUCKET_NAME)
         train_terms_file = 'raw_data/Train/train_terms.tsv'
         train_seq_file = 'raw_data/Train/train_sequences.fasta'
-        blob = bucket.get_blob(train_terms_file)
-        print(blob)
+
+        blob_seq = bucket.get_blob(train_seq_file)
+        blob_terms = bucket.get_blob(train_terms_file)
+
+        path = os.path.join(f'gs://{BUCKET_NAME}', blob_terms.name)
+        print(path)
+        df = pd.read_csv(path,sep='\t')
+        print(df)
+
         return None
 
 def get_data_with_cache(cache_path) -> np.array:
