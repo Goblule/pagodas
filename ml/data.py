@@ -6,6 +6,9 @@ import networkx
 
 from Bio import SeqIO
 from pathlib import Path
+from params import *
+from google.cloud import storage
+
 
 def read_fasta_file(train_seq_file: str) -> pd.DataFrame:
 
@@ -50,12 +53,28 @@ def read_obo_file(obo_file: str) -> tuple :
 
 
 # load raw data
-def load_raw_data_local(RAW_DATA_DIR: str) -> tuple :
+def load_raw_data_local() -> tuple :
     train_terms_file = Path(RAW_DATA_DIR).joinpath("train_terms.tsv")
     train_seq_file = Path(RAW_DATA_DIR).joinpath("train_sequences.fasta")
     train_terms = pd.read_csv(train_terms_file,sep='\t')
     train_seq = read_fasta_file(train_seq_file)
     return train_terms, train_seq
+
+def load_raw_data() -> tuple :
+
+    if STORAGE_DATA_KEY == 'local':
+        train_terms_file = Path(RAW_DATA_DIR).joinpath("train_terms.tsv")
+        train_seq_file = Path(RAW_DATA_DIR).joinpath("train_sequences.fasta")
+        return load_raw_data_local()
+
+    if STORAGE_DATA_KEY == 'gcs':
+        client = storage.Client()
+        bucket = client.get_bucket(BUCKET_NAME)
+        train_terms_file = 'raw_data/Train/train_terms.tsv'
+        train_seq_file = 'raw_data/Train/train_sequences.fasta'
+        blob = bucket.get_blob(train_terms_file)
+        print(blob)
+        return None
 
 def get_data_with_cache(cache_path) -> np.array:
   print(f"\nLoading data from local npy file {cache_path} ...")
@@ -63,3 +82,4 @@ def get_data_with_cache(cache_path) -> np.array:
   print(f"✅ Data loaded, with shape {array.shape}")
   return array
 
+load_raw_data()

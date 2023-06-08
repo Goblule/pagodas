@@ -42,15 +42,19 @@ def preprocess() -> None:
 
     else:
 
-        train_terms, train_seq = load_raw_data_local(RAW_DATA_DIR)
+        train_terms, train_seq = load_raw_data_local()
 
         print(f'\n✅ Raw Data loaded')
         print(f'--- Train terms with shape {train_terms.shape} ---')
         print(f'--- Train sequences with shape {train_seq.shape} ---')
 
         # preproc target --> y_train, y_labels
-        y_train, y_labels = encoding_target(train_terms,train_seq.ids,NUM_OF_LABELS)
+        y_train, y_labels = encoding_target(train_terms,train_seq.ids)
 
         # save y_train, y_labels in cache
         np.save(y_train_cache_path,y_train)
         np.save(y_labels_cache_path,y_labels)
+
+
+if __name__ == '__main__':
+    preprocess()
