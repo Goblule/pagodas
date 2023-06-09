@@ -1,37 +1,22 @@
 
 import numpy as np
 import pandas as pd
-import obonet
 import networkx
+import obonet
 
 from Bio import SeqIO
 from pathlib import Path
 from params import *
 from google.cloud import storage
 
-def read_fasta_file(train_seq_file: str) -> pd.DataFrame:
 
-    with open(train_seq_file) as fastafile:
-      headers = []
-      sequences = []
-      ids= []
-      entries = []
-      # lengths = []
-      for entry in SeqIO.parse(fastafile, 'fasta'):
-          headers.append(entry.description)
-          sequences.append(entry.seq)
-          entries.append(entry)
-          ids.append(entry.id)
+def load_raw_obo_file() -> tuple :
 
-    # Convert sequences (list of chars) to strings
-    sequences = [str(x) for x in sequences]
+    '''
+    This function is implemented for the moment locally
+    '''
 
-    # Create dataframe
-    df_fasta = pd.DataFrame({'ids':ids, 'headers':headers, 'seq':sequences})
-
-    return df_fasta
-
-def read_obo_file(obo_file: str) -> tuple :
+    obo_file = Path(RAW_DATA_DIR).joinpath('go-basic.obo')
 
     # Read the gene ontology
     graph = obonet.read_obo(obo_file)
@@ -50,42 +35,89 @@ def read_obo_file(obo_file: str) -> tuple :
 
     return graph, id_to_name
 
+def load_raw_fasta_file() -> pd.DataFrame:
 
-# load raw data
-def load_raw_data_local() -> tuple :
-    train_terms_file = Path(RAW_DATA_DIR).joinpath("train_terms.tsv")
-    train_seq_file = Path(RAW_DATA_DIR).joinpath("train_sequences.fasta")
-    train_terms = pd.read_csv(train_terms_file,sep='\t')
-    train_seq = read_fasta_file(train_seq_file)
-    return train_terms, train_seq
-
-def load_raw_data() -> tuple :
+    '''
+    This function reads the fasta file either from the local directory or from the gcs cloud.
+    The option is specified via the environment variable STORAGE_DATA_KEY (local, gcs).
+    '''
 
     if STORAGE_DATA_KEY == 'local':
-        train_terms_file = Path(RAW_DATA_DIR).joinpath("train_terms.tsv")
-        train_seq_file = Path(RAW_DATA_DIR).joinpath("train_sequences.fasta")
-        return load_raw_data_local()
+        train_seq_file = Path(RAW_DATA_DIR).joinpath('train_sequences.fasta')
+        with open(train_seq_file) as fastafile:
+            headers = []
+            sequences = []
+            ids= []
+            entries = []
+            # lengths = []
+            for entry in SeqIO.parse(fastafile, 'fasta'):
+                headers.append(entry.description)
+                sequences.append(entry.seq)
+                entries.append(entry)
+                ids.append(entry.id)
+            # Convert sequences (list of chars) to strings
+            sequences = [str(x) for x in sequences]
+            # Create dataframe
+            df_fasta = pd.DataFrame({'ids':ids, 'headers':headers, 'seq':sequences})
 
     if STORAGE_DATA_KEY == 'gcs':
-        client = storage.Client()
-        bucket = client.get_bucket(BUCKET_NAME)
-        train_terms_file = 'raw_data/Train/train_terms.tsv'
+        # Path of train terms and fasta file
         train_seq_file = 'raw_data/Train/train_sequences.fasta'
+        # Initialize client
+        client = storage.Client()
+        # Get bucket
+        bucket = client.get_bucket(BUCKET_NAME)
+        # Get blob
+        blob_train_seq = bucket.get_blob(train_seq_file)
+        # Read blob
+        with blob_train_seq.open('r') as fastafile:
+            headers = []
+            sequences = []
+            ids= []
+            entries = []
+            # lengths = []
+            for entry in SeqIO.parse(fastafile, 'fasta'):
+                headers.append(entry.description)
+                sequences.append(entry.seq)
+                entries.append(entry)
+                ids.append(entry.id)
+            # Convert sequences (list of chars) to strings
+            sequences = [str(x) for x in sequences]
+            # Create dataframe
+            df_fasta = pd.DataFrame({'ids':ids, 'headers':headers, 'seq':sequences})
 
-        blob_seq = bucket.get_blob(train_seq_file)
-        blob_terms = bucket.get_blob(train_terms_file)
+    return df_fasta
 
-        path = os.path.join(f'gs://{BUCKET_NAME}', blob_terms.name)
-        print(path)
-        df = pd.read_csv(path,sep='\t')
-        print(df)
+def load_raw_train_terms() -> pd.DataFrame :
 
-        return None
+    '''
+    This function loads the raw train terms either from the local directory or from the gcs cloud.
+    The option is specified via the environment variable STORAGE_DATA_KEY (local, gcs).
+    '''
+
+    if STORAGE_DATA_KEY == 'local':
+        train_terms_file = Path(RAW_DATA_DIR).joinpath('train_terms.tsv')
+        train_terms = pd.read_csv(train_terms_file,sep='\t')
+
+    if STORAGE_DATA_KEY == 'gcs':
+        # Path of train terms and fasta file
+        train_terms_file = 'raw_data/Train/train_terms.tsv'
+        # Initialize client
+        client = storage.Client()
+        # Get bucket
+        bucket = client.get_bucket(BUCKET_NAME)
+        # Get blob
+        blob_train_terms = bucket.get_blob(train_terms_file)
+        # Define path
+        train_terms_bucket_file = os.path.join(f'gs://{BUCKET_NAME}', blob_train_terms.name) # Define path
+        # Read dataframe
+        train_terms = pd.read_csv(train_terms_bucket_file,sep='\t')
+
+    return train_terms
+
 
 def get_data_with_cache(cache_path) -> np.array:
   print(f"\nLoading data from local npy file {cache_path} ...")
   array = np.load(cache_path,allow_pickle=True)
   print(f"✅ Data loaded, with shape {array.shape}")
   return array
-
-load_raw_data()
