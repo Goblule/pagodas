@@ -109,15 +109,56 @@ def load_raw_train_terms() -> pd.DataFrame :
         # Get blob
         blob_train_terms = bucket.get_blob(train_terms_file)
         # Define path
-        train_terms_bucket_file = os.path.join(f'gs://{BUCKET_NAME}', blob_train_terms.name) # Define path
+        train_terms_bucket_file = os.path.join(f'gs://{BUCKET_NAME}', blob_train_terms.name)
         # Read dataframe
         train_terms = pd.read_csv(train_terms_bucket_file,sep='\t')
 
     return train_terms
 
 
-def get_data_with_cache(cache_path) -> np.array:
-  print(f"\nLoading data from local npy file {cache_path} ...")
-  array = np.load(cache_path,allow_pickle=True)
-  print(f"✅ Data loaded, with shape {array.shape}")
-  return array
+def get_preproc_data(array_filename: str) -> np.array:
+
+    '''
+    This function loads npy arrays of preproc data either from the local directory or from the gcs cloud.
+    The option is specified via the environment variable STORAGE_DATA_KEY (local, gcs).
+    '''
+
+    if STORAGE_DATA_KEY == 'local':
+        cache_path = Path(PREPROC_DATA_DIR).joinpath(array_filename)
+        print(f"\nLoading local npy file {array_filename} ...")
+        array = np.load(cache_path,allow_pickle=True)
+
+    if STORAGE_DATA_KEY == 'gcs':
+        print(f"\nLoading from gcs cloud npy file {array_filename} ...")
+        # Initialize client
+        client = storage.Client()
+        # Get bucket
+        bucket = client.get_bucket(BUCKET_NAME)
+        # Get blob
+        blob = bucket.get_blob(f'preproc_data/{array_filename}')
+        # Define path
+        array_bucket_file = os.path.join(f'gs://{BUCKET_NAME}/preproc_data', blob.name)
+        # Read dataframe
+        array = np.load(array_bucket_file,allow_pickle=True)
+
+    return array
+
+def save_preproc_data(array: np.array, array_filename: str) -> None :
+
+    '''
+    This function saves npy arrays of preproc data either in the local directory or in the gcs cloud.
+    The option is specified via the environment variable STORAGE_DATA_KEY (local, gcs).
+    '''
+
+    #if STORAGE_DATA_KEY == 'local':
+    cache_path = Path(PREPROC_DATA_DIR).joinpath(array_filename)
+    np.save(cache_path,array)
+    print(f"✅ {array_filename} saved locally")
+
+    # Save array on gsc
+    if STORAGE_DATA_KEY == 'gcs':
+        client = storage.Client()
+        bucket = client.bucket(BUCKET_NAME)
+        blob = bucket.blob(f'preproc_data/{array_filename}')
+        blob.upload_from_filename(cache_path)
+        print(f"✅ {array_filename} saved to GCS")
