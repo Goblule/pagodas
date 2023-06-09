@@ -8,11 +8,13 @@ from sklearn.metrics import f1_score, get_scorer_names
 from tensorflow.keras import Model, models, layers, metrics
 from tensorflow.keras.saving import load_model
 from tensorflow.keras.callbacks import EarlyStopping
+from google.cloud import storage
+from params import *
 
 #functions
 def dense(n_layers:int,input_neurons:int,nlabels:int,nfeats:int):
   ''' Function that creates a dense tensorflow model'''
-  #initialize the sequential model
+  #instanciate the sequential model
   model = models.Sequential()
   #input layer
   model.add(layers.Dense(input_neurons,activation = 'relu',input_dim=nfeats))
@@ -30,18 +32,55 @@ def dense(n_layers:int,input_neurons:int,nlabels:int,nfeats:int):
 
   return model
 
+def LSTM(input_units:int,nlabels:int,nfeats:int):
+    ''' Function that creates a tensorflow RNN with LSTM layers'''
+    #instanciate sequential model
+    model_RNN = models.Sequential()
+    #lstm layers
+    model_RNN.add(layers.LSTM(units=input_units,activation='tanh',return_sequences=True,input_shape=(nfeats, 1)))
+    model_RNN.add(layers.LSTM(units=64,activation='tanh',return_sequences=False))
+    #dense layer
+    model_RNN.add(layers.Dense(units=64,activation='relu'))
+    #output layer
+    model_RNN.add(layers.Dense(nlabels,activation='sigmoid'))
+
+    #compile the model
+    model_RNN.compile(loss='binary_crossentropy',
+                      optimizer='adam',
+                      metrics=[metrics.AUC()])
+    print(f"✅ RNN model initialized, with 2 LSTM layers, {input_units} input units")
+    return model_RNN
+
 def save_model(model,model_name):
     '''Function that saves the model'''
     ##define the path
-    MODEL_DIR = os.path.join('drive/MyDrive/pagodas','models')
-    model_file = Path(MODEL_DIR).joinpath(model_name)
+    MODEL_LOCAL_DIR = f'models/{model_name}'
     #save the model to the path
-    model.save(model_file)
+    model.save(MODEL_LOCAL_DIR)
+    print(f"✅ {model_name} saved locally to {MODEL_LOCAL_DIR}")
+    if STORAGE_DATA_KEY == 'gcs':
+        MODEL_BUCKET_PATH = os.path.join(f'gs://{BUCKET_NAME}', model_name)
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(BUCKET_NAME)
+        blob = bucket.blob(MODEL_BUCKET_PATH)
+        blob.upload_from_filename(MODEL_BUCKET_PATH)
+        model.save(MODEL_BUCKET_PATH)
+        print(f"✅ {model_name} saved to GCS {BUCKET_NAME} bucket")
     pass
 
 def load_model(model_file):
-    '''Function that loads the model'''
-    model = load_model(model_file, custom_objects=None, compile=True, safe_mode=True)
+    '''Function that loads the model from gcs'''
+    if STORAGE_DATA_KEY == 'gcs':
+        client = storage.Client()
+        bucket = client.get_bucket(BUCKET_NAME)
+        blob = bucket.get_blob(model_file)
+        #print(blob)
+        #model_file = 'models/dense_2L_256_1500_labels_baseline.h5'
+        MODEL_LOAD_DIR = os.path.join(f'gs://{BUCKET_NAME}', blob.name)
+        model = load_model(MODEL_LOAD_DIR)
+        print(model.summary())
+        print(f"✅ {model_file} loaded from gcs")
+
     return model
 
 def train_model(model,X_train,y_train,epochs,batch_size,validation_split,patience):

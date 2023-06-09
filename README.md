@@ -1,3 +1,6 @@
+
+PAGODAS stands for Protein Annotation by Gene Ontology through Deep learning Automated System
+
 <u>Understand the problem</u>
 
 1. Overview
