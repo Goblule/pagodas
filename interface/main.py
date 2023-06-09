@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from ml.data import read_obo_file, load_raw_data_local, get_data_with_cache
+from ml.data import load_raw_fasta_file, load_raw_train_terms, get_data_with_cache
 from ml.preprocessing import encoding_target
 from params import *
 from pathlib import Path
@@ -42,7 +42,8 @@ def preprocess() -> None:
 
     else:
 
-        train_terms, train_seq = load_raw_data_local()
+        train_terms = load_raw_train_terms()
+        train_seq = load_raw_fasta_file()
 
         print(f'\n✅ Raw Data loaded')
         print(f'--- Train terms with shape {train_terms.shape} ---')
