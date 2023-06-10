@@ -43,15 +43,15 @@ def preprocess() -> None:
             X_train = get_preproc_data(X_train_filename)
             X_train_ids = get_preproc_data(X_train_ids_filename)
         else:
-            # train_seq = load_raw_fasta_file()
-            # print(f'\n✅ Raw train sequences loaded')
-            # print(f'--- Train sequences with shape {train_seq.shape} ---')
-            # # Clean train_seq
-            # train_seq = clean_raw_fasta_df(train_seq)
-            # print(f'\n✅ Train sequences cleaned')
-            # print(f'--- Train sequences have now shape {train_seq.shape} ---')
-            # X_train_ids = train_seq.ids
-            # save_preproc_data(X_train_ids,X_train_ids_filename)
+            train_seq = load_raw_fasta_file()
+            print(f'\n✅ Raw train sequences loaded')
+            print(f'--- Train sequences with shape {train_seq.shape} ---')
+            # Clean train_seq
+            train_seq = clean_raw_fasta_df(train_seq)
+            print(f'\n✅ Train sequences cleaned')
+            print(f'--- Train sequences have now shape {train_seq.shape} ---')
+            X_train_ids = train_seq.ids
+            save_preproc_data(X_train_ids,X_train_ids_filename)
             # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
             # save_preproc_data(X_train,X_train_filename)
             pass
@@ -82,30 +82,44 @@ def preprocess() -> None:
         client = storage.Client()
         # Get bucket
         bucket = client.get_bucket(BUCKET_NAME)
+        # X_train
         # Check if files exist in the bucket
-        if storage.Blob(bucket=bucket,name=f'preproc_data/{y_train_filename}').exists(client) and \
-            storage.Blob(bucket=bucket,name=f'preproc_data/{y_labels_filename}').exists(client) :
-            y_train = get_preproc_data(y_train_filename)
-            y_labels = get_preproc_data(y_labels_filename)
+        if (storage.Blob(bucket=bucket,name=f'preproc_data/{X_train_filename}').exists(client) and \
+            storage.Blob(bucket=bucket,name=f'preproc_data/{X_train_ids_filename}').exists(client)) :
+            X_train = get_preproc_data(X_train_filename)
+            X_train_ids = get_preproc_data(X_train_ids_filename)
         else:
-            print(f'\n{y_train_filename} and {y_labels_filename} do not exist in gcs bucket')
-            print(f'\nPreprocessing raw data ...')
-            # Load raw data
-            train_terms = load_raw_train_terms()
             train_seq = load_raw_fasta_file()
-            print(f'\n✅ Raw Data loaded')
-            print(f'--- Train terms with shape {train_terms.shape} ---')
+            print(f'\n✅ Raw train sequences loaded')
             print(f'--- Train sequences with shape {train_seq.shape} ---')
             # Clean train_seq
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
+            X_train_ids = train_seq.ids
+            save_preproc_data(X_train_ids,X_train_ids_filename)
+            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
+            # save_preproc_data(X_train,X_train_filename)
+            pass
+        # y_train
+        # Check if files exist in the bucket
+        if (storage.Blob(bucket=bucket,name=f'preproc_data/{y_train_filename}').exists(client) and \
+            storage.Blob(bucket=bucket,name=f'preproc_data/{y_labels_filename}').exists(client)) :
+            y_train = get_preproc_data(y_train_filename)
+            y_labels = get_preproc_data(y_labels_filename)
+        else:
+            print(f'\n{y_train_filename} and {y_labels_filename} do not exist locally')
+            print(f'\nPreprocessing raw data ...')
+            # Load raw data
+            train_terms = load_raw_train_terms()
+            print(f'\n✅ Raw train terms loaded')
+            print(f'--- Train terms with shape {train_terms.shape} ---')
             # Preproc target --> y_train, y_labels
-            y_train, y_labels = encoding_target(train_terms,train_seq.ids)
+            y_train, y_labels = encoding_target(train_terms,X_train_ids.ids)
             print(f'\n✅ Preprocessing done')
             print(f'--- Train target shape {y_train.shape} ---')
             print(f'--- Encoding labels shape {y_labels.shape} ---')
-            print(f'\n✅ Saving results in local cache')
+            print(f'\n✅ Saving results in gcs cloud')
             # Save y_train, y_labels
             save_preproc_data(y_train,y_train_filename)
             save_preproc_data(y_labels,y_labels_filename)
