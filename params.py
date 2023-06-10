@@ -2,6 +2,7 @@ import os
 
 # PREPROC
 NUM_OF_LABELS = int(os.environ.get('NUM_OF_LABELS'))
+NUM_OF_FEATURES = int(os.environ.get('NUM_OF_FEATURES'))
 
 # GCP PROJECT
 GCP_PROJECT = os.environ.get('GCP_PROJECT')
@@ -16,3 +17,4 @@ BUCKET_NAME = os.environ.get('BUCKET_NAME')
 # DATA DIRS
 RAW_DATA_DIR = os.path.join('.', 'raw_data', 'Train')
 PREPROC_DATA_DIR = os.path.join('.', 'preproc_data')
+MODEL_DATA_DIR = os.path.join('.', 'models')

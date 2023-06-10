@@ -1,80 +1,181 @@
 #imports
 import os
 from pathlib import Path
-from sklearn.model_selection import cross_validate
-from sklearn.pipeline import make_pipeline
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import f1_score, get_scorer_names
-from tensorflow.keras import Model, models, layers, metrics
+from tensorflow.keras import models, layers, metrics
 from tensorflow.keras.saving import load_model
 from tensorflow.keras.callbacks import EarlyStopping
 from google.cloud import storage
 from params import *
 
 #functions
-def dense(n_layers:int,input_neurons:int,nlabels:int,nfeats:int):
-  ''' Function that creates a dense tensorflow model'''
-  #instanciate the sequential model
+def dense(n_layers:int,input_neurons:int):
+
+  ''' Function that creates a dense model and returns it'''
+
+  #Instanciate the sequential model
   model = models.Sequential()
-  #input layer
-  model.add(layers.Dense(input_neurons,activation = 'relu',input_dim=nfeats))
-  #add the middle layers through loop
+
+  #Input layer
+  model.add(layers.Dense(input_neurons,activation = 'relu',
+                         input_dim=NUM_OF_FEATURES))
+
+  #Middle layers through loop
   for i in range(1,n_layers):
     model.add(layers.Dense(input_neurons/2**i,activation = 'relu'))
-  #add the output layer
-  model.add(layers.Dense(nlabels,activation='sigmoid'))
-  print(f"✅ Dense model initialized, with {n_layers} layers, {input_neurons} input neurons")
 
-  #compile the model
+  #Output layer
+  model.add(layers.Dense(NUM_OF_LABELS,activation='sigmoid'))
+
+  #Compile the model
   model.compile(loss='binary_crossentropy',
                 optimizer='adam',
-                metrics=[metrics.AUC()])
+                metrics=[metrics.AUC(),metrics.Recall(),'accuracy'])
+
+  print(f'''✅ Dense model initialized, with {n_layers} layers,
+        {input_neurons} input neurons''')
 
   return model
 
-def LSTM(input_units:int,nlabels:int,nfeats:int):
-    ''' Function that creates a tensorflow RNN with LSTM layers'''
-    #instanciate sequential model
-    model_RNN = models.Sequential()
-    #lstm layers
-    model_RNN.add(layers.LSTM(units=input_units,activation='tanh',return_sequences=True,input_shape=(nfeats, 1)))
-    model_RNN.add(layers.LSTM(units=64,activation='tanh',return_sequences=False))
-    #dense layer
-    model_RNN.add(layers.Dense(units=64,activation='relu'))
-    #output layer
-    model_RNN.add(layers.Dense(nlabels,activation='sigmoid'))
 
-    #compile the model
+def LSTM(input_units:int):
+    ''' Function that creates a tensorflow RNN with LSTM layers and
+    returns it'''
+
+    #Instanciate the sequential model
+    model_RNN = models.Sequential()
+
+    #LSTM layers
+    model_RNN.add(layers.LSTM(units=input_units,activation='tanh',
+                              return_sequences=True,
+                              input_shape=(NUM_OF_FEATURES, 1)))
+    model_RNN.add(layers.LSTM(units=128,
+                              activation='tanh',
+                              return_sequences=False))
+
+    #Dense layer
+    model_RNN.add(layers.Dense(units=3000,activation='relu'))
+
+    #Output layer
+    model_RNN.add(layers.Dense(NUM_OF_LABELS,activation='sigmoid'))
+
+    #Compile the model
     model_RNN.compile(loss='binary_crossentropy',
                       optimizer='adam',
-                      metrics=[metrics.AUC()])
-    print(f"✅ RNN model initialized, with 2 LSTM layers, {input_units} input units")
+                      metrics=[metrics.AUC(),metrics.Recall(),'accuracy'])
+
+    print(f'''✅ RNN model initialized, with 2 LSTM layers,
+          {input_units} input units''')
+
     return model_RNN
 
+
+def ResLSTM(input_units:int):
+
+    '''Function that creates a tensorflow ResLSTM model and returns it'''
+
+    # Input layer
+    inputs = layers.Input(shape=(NUM_OF_FEATURES, 1))
+
+    # Residual block
+    residual = inputs
+
+    # LSTM layer
+    x = layers.Bidirectional(layers.LSTM(input_units,
+                                         return_sequences=False))(inputs)
+    x = layers.Add()([x, residual])
+
+    # Flatten layer
+    x = layers.Flatten()(x)
+
+    # Dense layers
+    x = layers.Dense(3000, activation='relu')(x)
+    outputs = layers.Dense(NUM_OF_LABELS, activation='sigmoid')(x)
+
+    # Create the model
+    model = models.Model(inputs=inputs, outputs=outputs)
+
+    # Compile the model
+    model.compile(loss='binary_crossentropy',
+                  optimizer='adam',
+                  metrics=[metrics.AUC(),metrics.Recall(),'accuracy'])
+
+    print(f'''✅ ResLSTM model initialized, with 1 LSTM layers,
+          {input_units} input units''')
+
+    return model
+
+
+def CNN_LSTM(input_filters,kernel_size):
+
+    '''Function that creates a tensorflow CNN/LSTM hybrid model and
+    returns it'''
+
+    # Instanciate sequential model
+    model_CNN_LSTM = models.Sequential()
+
+    # Conv1D layer for spatial pattern detection
+    model_CNN_LSTM.add(layers.Conv1D(input_filters,
+                                     kernel_size=kernel_size,
+                                     input_shape = (NUM_OF_FEATURES,1),
+                                     padding='same',
+                                     activation='relu'))
+    # pooling layer
+    model_CNN_LSTM.add(layers.MaxPooling1D(pool_size=2))
+
+    # LSTM layer for sequence modeling
+    model_CNN_LSTM.add(layers.LSTM(units=64,
+                                   dropout=0.2,
+                                   recurrent_dropout=0.2))
+
+    # Dense layer for non-linear transformations
+    model_CNN_LSTM.add(layers.Dense(1500, activation='relu'))
+
+    # Output layer (fully connected layer for classification)
+    model_CNN_LSTM.add(layers.Dense(NUM_OF_LABELS, activation='sigmoid'))
+
+    # Compile the model
+    model_CNN_LSTM.compile(loss='binary_crossentropy',
+                           optimizer='adam',
+                           metrics=[metrics.AUC(),metrics.Recall(),'accuracy'])
+
+    print(f'''✅ ResLSTM model initialized, with 1 Conv1D,
+          {input_filters} input filters and 1 LSTM layer''')
+
+    return model_CNN_LSTM
+
+
 def save_model(model,model_name):
-    '''Function that saves the model'''
+
+    '''Function that saves a model either in the local directory or in gcs
+    cloud. The option is specified via the environment variable
+    STORAGE_DATA_KEY (local, gcs)
+    '''
+
     ##define the path
-    MODEL_LOCAL_DIR = f'models/{model_name}'
+    cache_path = Path(MODEL_DATA_DIR).joinpath(model_name)
     #save the model to the path
-    model.save(MODEL_LOCAL_DIR)
-    print(f"✅ {model_name} saved locally to {MODEL_LOCAL_DIR}")
+    model.save(cache_path)
+    print(f"✅ {model_name} saved locally to {MODEL_DATA_DIR}")
+
     if STORAGE_DATA_KEY == 'gcs':
-        MODEL_BUCKET_PATH = os.path.join(f'gs://{BUCKET_NAME}', model_name)
         storage_client = storage.Client()
         bucket = storage_client.get_bucket(BUCKET_NAME)
-        blob = bucket.blob(MODEL_BUCKET_PATH)
-        blob.upload_from_filename(MODEL_BUCKET_PATH)
-        model.save(MODEL_BUCKET_PATH)
+        blob = bucket.blob(f'models/{model_name}')
+        blob.upload_from_filename(cache_path)
         print(f"✅ {model_name} saved to GCS {BUCKET_NAME} bucket")
     pass
 
+
 def load_model(model_file):
-    '''Function that loads the model from gcs'''
+
+    '''Function that loads a model either from the local directory or from
+    gcs cloud. The option is specified via the environment variable
+    STORAGE_DATA_KEY (local, gcs).'''
+
     if STORAGE_DATA_KEY == 'gcs':
         client = storage.Client()
         bucket = client.get_bucket(BUCKET_NAME)
         blob = bucket.get_blob(model_file)
-        #print(blob)
         #model_file = 'models/dense_2L_256_1500_labels_baseline.h5'
         MODEL_LOAD_DIR = os.path.join(f'gs://{BUCKET_NAME}', blob.name)
         model = load_model(MODEL_LOAD_DIR)
@@ -83,10 +184,22 @@ def load_model(model_file):
 
     return model
 
-def train_model(model,X_train,y_train,epochs,batch_size,validation_split,patience):
-    '''Function that trains the model'''
+
+def train_model(model,X_train,y_train,epochs,batch_size,
+                validation_split,patience):
+
+    '''Function that trains a given model and returns the trained model and
+    the history'''
+
     #define the early stopping
     es = EarlyStopping(patience=patience,restore_best_weights=True)
     #fit the model
-    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split,callbacks = [es],verbose=2)
-    return model
+    history = model.fit(X_train,
+              y_train,
+              epochs=epochs,
+              batch_size=batch_size,
+              validation_split=validation_split,
+              callbacks = [es],
+              verbose=2)
+
+    return model, history
