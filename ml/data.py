@@ -61,7 +61,7 @@ def load_raw_fasta_file() -> pd.DataFrame:
             df_fasta = pd.DataFrame({'ids':ids, 'headers':headers, 'seq':sequences})
 
     if STORAGE_DATA_KEY == 'gcs':
-        # Path of train terms and fasta file
+        # Path of fasta file
         train_seq_file = 'raw_data/Train/train_sequences.fasta'
         # Initialize client
         client = storage.Client()
@@ -88,6 +88,12 @@ def load_raw_fasta_file() -> pd.DataFrame:
 
     return df_fasta
 
+def clean_raw_fasta_df(df_fasta: pd.DataFrame) -> pd.DataFrame :
+    # Clean the original fasta dataframe
+    df = df_fasta.copy()
+    df_dropped = df.drop_duplicates(subset=['seq'])
+    return df_dropped
+
 def load_raw_train_terms() -> pd.DataFrame :
 
     '''
@@ -100,7 +106,7 @@ def load_raw_train_terms() -> pd.DataFrame :
         train_terms = pd.read_csv(train_terms_file,sep='\t')
 
     if STORAGE_DATA_KEY == 'gcs':
-        # Path of train terms and fasta file
+        # Path of train terms
         train_terms_file = 'raw_data/Train/train_terms.tsv'
         # Initialize client
         client = storage.Client()
@@ -115,44 +121,46 @@ def load_raw_train_terms() -> pd.DataFrame :
 
     return train_terms
 
-
-def get_preproc_data(array_filename: str) -> np.array:
+def get_preproc_data(data_filename: str) -> pd.DataFrame:
 
     '''
-    This function loads npy arrays of preproc data either from the local directory or from the gcs cloud.
+    This function loads arrays of preproc data either from the local directory or from the gcs cloud.
     The option is specified via the environment variable STORAGE_DATA_KEY (local, gcs).
     '''
 
     if STORAGE_DATA_KEY == 'local':
-        cache_path = Path(PREPROC_DATA_DIR).joinpath(array_filename)
-        print(f"\nLoading local npy file {array_filename} ...")
-        array = np.load(cache_path,allow_pickle=True)
+        cache_path = Path(PREPROC_DATA_DIR).joinpath(data_filename)
+        print(f"\nLoading local csv file {data_filename} ...")
+        data = pd.read_csv(cache_path,sep='\t')
 
     if STORAGE_DATA_KEY == 'gcs':
-        print(f"\nLoading from gcs cloud npy file {array_filename} ...")
+        # Path of array file
+        array_file = f'preproc_data/{data_filename}'
+        print(f"\nLoading from gcs cloud csv file {data_filename} ...")
         # Initialize client
         client = storage.Client()
         # Get bucket
         bucket = client.get_bucket(BUCKET_NAME)
         # Get blob
-        blob = bucket.get_blob(f'preproc_data/{array_filename}')
+        blob = bucket.get_blob(array_file)
         # Define path
-        array_bucket_file = os.path.join(f'gs://{BUCKET_NAME}/preproc_data', blob.name)
+        data_bucket_file = os.path.join(f'gs://{BUCKET_NAME}', blob.name)
         # Read dataframe
-        array = np.load(array_bucket_file,allow_pickle=True)
+        data = pd.read_csv(data_bucket_file)
 
-    return array
+    return data
 
 def save_preproc_data(array: np.array, array_filename: str) -> None :
 
     '''
-    This function saves npy arrays of preproc data either in the local directory or in the gcs cloud.
-    The option is specified via the environment variable STORAGE_DATA_KEY (local, gcs).
+    This function saves arrays of preproc data (format csv) in the local directory and in the gcs cloud
+    (if specified via the environment variable STORAGE_DATA_KEY == gcs).
     '''
 
     #if STORAGE_DATA_KEY == 'local':
     cache_path = Path(PREPROC_DATA_DIR).joinpath(array_filename)
-    np.save(cache_path,array)
+    pd.DataFrame(array).to_csv(cache_path,index=False)
+    #np.save(cache_path,array)
     print(f"✅ {array_filename} saved locally")
 
     # Save array on gsc

@@ -2,6 +2,7 @@ import os
 
 # PREPROC
 NUM_OF_LABELS = int(os.environ.get('NUM_OF_LABELS'))
+NUM_OF_FEATS = int(os.environ.get('NUM_OF_FEATS'))
 
 # GCP PROJECT
 GCP_PROJECT = os.environ.get('GCP_PROJECT')
