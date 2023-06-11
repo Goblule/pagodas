@@ -17,7 +17,7 @@ def dense(n_layers:int,input_neurons:int):
 
   #Input layer
   model.add(layers.Dense(input_neurons,activation = 'relu',
-                         input_dim=NUM_OF_FEATURES))
+                         input_dim=NUM_OF_FEATS))
 
   #Middle layers through loop
   for i in range(1,n_layers):
@@ -47,7 +47,7 @@ def LSTM(input_units:int):
     #LSTM layers
     model_RNN.add(layers.LSTM(units=input_units,activation='tanh',
                               return_sequences=True,
-                              input_shape=(NUM_OF_FEATURES, 1)))
+                              input_shape=(NUM_OF_FEATS, 1)))
     model_RNN.add(layers.LSTM(units=128,
                               activation='tanh',
                               return_sequences=False))
@@ -74,7 +74,7 @@ def ResLSTM(input_units:int):
     '''Function that creates a tensorflow ResLSTM model and returns it'''
 
     # Input layer
-    inputs = layers.Input(shape=(NUM_OF_FEATURES, 1))
+    inputs = layers.Input(shape=(NUM_OF_FEATS, 1))
 
     # Residual block
     residual = inputs
@@ -116,7 +116,7 @@ def CNN_LSTM(input_filters,kernel_size):
     # Conv1D layer for spatial pattern detection
     model_CNN_LSTM.add(layers.Conv1D(input_filters,
                                      kernel_size=kernel_size,
-                                     input_shape = (NUM_OF_FEATURES,1),
+                                     input_shape = (NUM_OF_FEATS,1),
                                      padding='same',
                                      activation='relu'))
     # pooling layer
@@ -186,7 +186,7 @@ def load_model(model_file):
 
 
 def train_model(model,X_train,y_train,epochs,batch_size,
-                validation_split,patience):
+                validation_split,patience) -> tuple :
 
     '''Function that trains a given model and returns the trained model and
     the history'''

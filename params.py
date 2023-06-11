@@ -1,11 +1,11 @@
 import os
 
 # PREPROC
-NUM_OF_LABELS = int(os.environ.get('NUM_OF_LABELS'))
-NUM_OF_FEATURES = int(os.environ.get('NUM_OF_FEATURES'))
+NUM_OF_LABELS = int(os.environ.get('NUM_OF_LABELS')) #size of the encoded target
+NUM_OF_FEATS = int(os.environ.get('NUM_OF_FEATS')) #size of the embedding
 
 # GCP PROJECT
-GCP_PROJECT = os.environ.get('GCP_PROJECT')
+GCP_PROJECT = os.environ.get('GCP_PROJECT') #name of the gcp project
 GCP_REGION = os.environ.get('GCP_REGION')
 
 # STORAGE DATA
