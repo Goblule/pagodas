@@ -68,18 +68,13 @@ def get_embedding( sequence : str,
     regular pytorch
     """
 
-    # If tokenizer not instantiated, init tokenizer
+    # If tokenizer or embedding_model not instantiated, raise exceptions
     if not tokenizer:
-        print("Tokenizer not loaded yet!")
-        print('\n Loading T5 tokenizer...')
-        tokenizer = T5Tokenizer.from_pretrained('Rostlab/prot_t5_xl_half_uniref50-enc', do_lower_case=False)
+        raise Exception("Tokenizer not loaded yet!")
 
-
-    # If model not instantiated, init model
     if not embedding_model:
-        print("Embedding model not loaded yet!")
-        print("Loading T5 encoding model...")
-        embedding_model = TFT5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_bfd", from_pt=True)
+        raise Exception("Embedding Model not loaded yet!")
+
 
     # Replace rare amino acids in sequence with X (aka "any")
     seq_processed = " ".join(re.sub(r'[UZOB]', 'X', sequence))

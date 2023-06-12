@@ -13,6 +13,7 @@ from google.cloud import storage
 from params import *
 
 
+
 #functions
 def dense(n_layers:int,input_neurons:int):
 
@@ -210,6 +211,7 @@ def train_model(model,X_train,y_train,epochs,batch_size,
 
     return model, history
 
+
 def load_embedding_model() -> tuple:
     """
     This function will load the T5 embedding model and tokenizer
@@ -217,7 +219,7 @@ def load_embedding_model() -> tuple:
     RETURNS a tuple: (tokenizer, model)
     """
 
-    model_path = Path(MODEL_DATA_DIR).joinpath('embedding_model.h5')
+    model_path = Path(MODEL_DATA_DIR).joinpath('embedding_model.tf')
 
     # If the model isn't saved to local, perform the load + save
     if not contains_saved_model(model_path):
@@ -227,7 +229,9 @@ def load_embedding_model() -> tuple:
     tokenizer = T5Tokenizer.from_pretrained('Rostlab/prot_t5_xl_half_uniref50-enc', do_lower_case=False)
     embedding_model = load_model(model_path)
 
-    pass
+    print("returning model")
+    return tokenizer, embedding_model
+
 
 def save_embedding_model_to_local():
     """
@@ -235,6 +239,12 @@ def save_embedding_model_to_local():
     saves it to local
     model name: 'Rostlab/prot_t5_xl_half_uniref50-enc'
     returns nothing
+    NOTE: the model is 11gb heavy
     """
 
-    pass
+    model_path = Path(MODEL_DATA_DIR).joinpath('embedding_model.tf')
+
+    embedding_model = TFT5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_half_uniref50-enc", from_pt=True)
+    # save full model to local storage
+    embedding_model.save(model_path)
+    print(f"saved model to {model_path}")

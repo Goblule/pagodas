@@ -5,3 +5,4 @@ pagodas.egg-info/
 __pycache__
 .env
 .envrc
+models/

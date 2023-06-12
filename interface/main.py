@@ -53,9 +53,12 @@ def preprocess() -> None:
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
             X_train_ids = train_seq.ids
             save_preproc_data(X_train_ids,X_train_ids_filename)
-            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
-            # save_preproc_data(X_train,X_train_filename)
-            pass
+            # Load embedding model and launch embedding
+            print("loading embedding model..")
+            model, tokenizer = load_embedding_model()
+            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            save_preproc_data(X_train,X_train_filename)
+
         # y_train
         # Check if files exist
         if (y_train_cache_path.is_file() and y_labels_cache_path.is_file()) :
@@ -101,10 +104,12 @@ def preprocess() -> None:
             X_train_ids = train_seq.ids
             X_train_seq = train_seq.seq
             save_preproc_data(X_train_ids,X_train_ids_filename)
+            # Load embedding model and launch embedding
+            print("loading embedding model..")
             model, tokenizer = load_embedding_model()
             X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
-            # save_preproc_data(X_train,X_train_filename)
-            pass
+            save_preproc_data(X_train,X_train_filename)
+
         # y_train
         # Check if files exist in the bucket
         if (storage.Blob(bucket=bucket,name=f'preproc_data/{y_train_filename}').exists(client) and \
