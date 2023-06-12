@@ -49,7 +49,8 @@ def load_raw_fasta_file() -> pd.DataFrame:
             sequences = []
             ids= []
             entries = []
-            # lengths = []
+            lengths = []
+
             for entry in SeqIO.parse(fastafile, 'fasta'):
                 headers.append(entry.description)
                 sequences.append(entry.seq)
@@ -57,8 +58,9 @@ def load_raw_fasta_file() -> pd.DataFrame:
                 ids.append(entry.id)
             # Convert sequences (list of chars) to strings
             sequences = [str(x) for x in sequences]
+            lengths = [len(x) for x in sequences]
             # Create dataframe
-            df_fasta = pd.DataFrame({'ids':ids, 'headers':headers, 'seq':sequences})
+            df_fasta = pd.DataFrame({'id':id, 'header':headers, 'seq':sequences, 'length':lengths})
 
     if STORAGE_DATA_KEY == 'gcs':
         # Path of fasta file
@@ -75,7 +77,8 @@ def load_raw_fasta_file() -> pd.DataFrame:
             sequences = []
             ids= []
             entries = []
-            # lengths = []
+            lengths = []
+
             for entry in SeqIO.parse(fastafile, 'fasta'):
                 headers.append(entry.description)
                 sequences.append(entry.seq)
@@ -84,7 +87,7 @@ def load_raw_fasta_file() -> pd.DataFrame:
             # Convert sequences (list of chars) to strings
             sequences = [str(x) for x in sequences]
             # Create dataframe
-            df_fasta = pd.DataFrame({'ids':ids, 'headers':headers, 'seq':sequences})
+            df_fasta = pd.DataFrame({'id':ids, 'header':headers, 'seq':sequences, 'length':lengths})
 
     return df_fasta
 

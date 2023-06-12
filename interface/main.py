@@ -3,7 +3,8 @@ import numpy as np
 
 from ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
 from ml.preprocessing import encoding_target, get_embedding
-from ml.model import load_embedding_model
+from ml.model import load_train_model, load_embedding_model
+
 from params import *
 from pathlib import Path
 from google.cloud import storage
@@ -51,7 +52,8 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
-            X_train_ids = train_seq.ids
+            X_train_ids = train_seq['id']
+            X_train_seq = train_seq['seq']
             save_preproc_data(X_train_ids,X_train_ids_filename)
             # Load embedding model and launch embedding
             print("loading embedding model..")
@@ -72,7 +74,7 @@ def preprocess() -> None:
             print(f'\n✅ Raw train terms loaded')
             print(f'--- Train terms with shape {train_terms.shape} ---')
             # Preproc target --> y_train, y_labels
-            y_train, y_labels = encoding_target(train_terms,X_train_ids.ids)
+            y_train, y_labels = encoding_target(train_terms,X_train_ids['id'])
             print(f'\n✅ Preprocessing done')
             print(f'--- Train target shape {y_train.shape} ---')
             print(f'--- Encoding labels shape {y_labels.shape} ---')
@@ -100,9 +102,11 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
+
             # Get X_train ids and corresponding embeddings
-            X_train_ids = train_seq.ids
-            X_train_seq = train_seq.seq
+            X_train_ids = train_seq['id]
+            X_train_seq = train_seq['seq']
+
             save_preproc_data(X_train_ids,X_train_ids_filename)
             # Load embedding model and launch embedding
             print("loading embedding model..")
@@ -124,7 +128,7 @@ def preprocess() -> None:
             print(f'\n✅ Raw train terms loaded')
             print(f'--- Train terms with shape {train_terms.shape} ---')
             # Preproc target --> y_train, y_labels
-            y_train, y_labels = encoding_target(train_terms,X_train_ids.ids)
+            y_train, y_labels = encoding_target(train_terms,X_train_ids['id'])
             print(f'\n✅ Preprocessing done')
             print(f'--- Train target shape {y_train.shape} ---')
             print(f'--- Encoding labels shape {y_labels.shape} ---')
@@ -133,6 +137,29 @@ def preprocess() -> None:
             save_preproc_data(y_train,y_train_filename)
             save_preproc_data(y_labels,y_labels_filename)
 
+def predict():
+
+    # Load production model
+    try:
+        model = load_train_model(MODEL_PROD_NAME)
+    except:
+        print('The model in production does not exist, STOP!')
+
+    # Print the summary
+    print('\nModel summary:\n')
+    print(model.summary())
+
+    # Ask for sequence
+    sequence = str(input('\nInsert an aminoacids sequence\n'))
+
+    # Call embedding function
+    # sequence_emb = get_embedding(sequence)
+
+    # Do prediction
+    # y_pred = model.predict(sequence_emb)
+
+
 
 if __name__ == '__main__':
     preprocess()
+    predict()

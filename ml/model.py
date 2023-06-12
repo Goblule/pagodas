@@ -9,12 +9,20 @@ from tensorflow.saved_model import contains_saved_model
 from tensorflow.keras.saving import load_model
 from transformers import T5Tokenizer, TFT5EncoderModel
 
+from skmultilearn.adapt import MLkNN
+
 from google.cloud import storage
 from params import *
 
 
 
 #functions
+
+def MlkNN(neighbors):
+    #instanciate the KNN classifier
+    classifier = MLkNN(k=neighbors)
+    return classifier
+
 def dense(n_layers:int,input_neurons:int):
 
   ''' Function that creates a dense model and returns it'''
@@ -173,20 +181,33 @@ def save_model(model,model_name):
     pass
 
 
-def load_model(model_file):
+def load_train_model(model_filename):
 
     '''Function that loads a model either from the local directory or from
     gcs cloud. The option is specified via the environment variable
     STORAGE_DATA_KEY (local, gcs).'''
 
-    if STORAGE_DATA_KEY == 'gcs':
+    if STORAGE_MODEL_KEY == 'local':
+        cache_path = Path(MODEL_DATA_DIR).joinpath(model_filename)
+        print(f"\nLoading local model file {model_filename} ...")
+        model = load_model(cache_path)
+        print(f"✅ {model_file} loaded from local directory")
+
+
+    if STORAGE_MODEL_KEY == 'gcs':
+        # Path of model file
+        model_file = f'models/{model_filename}'
+        print(f"\nLoading from gcs cloud model file {model_filename} ...")
+        # Initialize client
         client = storage.Client()
+        # Get bucket
         bucket = client.get_bucket(BUCKET_NAME)
+        # Get blob
         blob = bucket.get_blob(model_file)
-        #model_file = 'models/dense_2L_256_1500_labels_baseline.h5'
-        MODEL_LOAD_DIR = os.path.join(f'gs://{BUCKET_NAME}', blob.name)
-        model = load_model(MODEL_LOAD_DIR)
-        print(model.summary())
+        # Define path
+        model_bucket_file = os.path.join(f'gs://{BUCKET_NAME}', blob.name)
+        # Load model
+        model = load_model(model_bucket_file)
         print(f"✅ {model_file} loaded from gcs")
 
     return model
