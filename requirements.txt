@@ -17,6 +17,8 @@ mlflow==2.1.1
 python-dotenv
 prefect==2.8.1
 psycopg2-binary
+transformers
+sentencepiece
 
 # biology
 biopython
