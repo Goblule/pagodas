@@ -4,10 +4,17 @@ from pathlib import Path
 from tensorflow.keras import models, layers, metrics
 from tensorflow.keras.saving import load_model
 from tensorflow.keras.callbacks import EarlyStopping
+from skmultilearn.adapt import MLkNN
 from google.cloud import storage
 from params import *
 
 #functions
+
+def MlkNN(neighbors):
+    #instanciate the KNN classifier
+    classifier = MLkNN(k=neighbors)
+    return classifier
+
 def dense(n_layers:int,input_neurons:int):
 
   ''' Function that creates a dense model and returns it'''
