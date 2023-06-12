@@ -6,6 +6,7 @@ default :
 	@echo 'Package options'
 	@echo '  reset_local_files  clean the preproc_data storage'
 	@echo '  run_preprocess     run preprocessing on raw data'
+	@echo '  run_predict        run prediction on new data'
 	@echo '  <option>           description'
 	@echo ' '
 
@@ -20,3 +21,6 @@ reset_local_files:
 
 run_preprocess:
 	python -c 'from interface.main import preprocess; preprocess()'
+
+run_predict:
+	python -c 'from interface.main import predict; predict()'

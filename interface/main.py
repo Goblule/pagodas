@@ -2,6 +2,7 @@
 import numpy as np
 
 from ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
+from ml.model import load_train_model
 from ml.preprocessing import encoding_target
 from params import *
 from pathlib import Path
@@ -124,6 +125,12 @@ def preprocess() -> None:
             save_preproc_data(y_train,y_train_filename)
             save_preproc_data(y_labels,y_labels_filename)
 
+def predict():
+    model = load_train_model(MODEL_PROD_NAME)
+    print(model.summary())
+
+
 
 if __name__ == '__main__':
     preprocess()
+    predict()
