@@ -69,7 +69,7 @@ def preprocess() -> None:
             print(f'\n✅ Raw train terms loaded')
             print(f'--- Train terms with shape {train_terms.shape} ---')
             # Preproc target --> y_train, y_labels
-            y_train, y_labels = encoding_target(train_terms,X_train_ids.ids)
+            y_train, y_labels = encoding_target(train_terms,X_train_ids['id'])
             print(f'\n✅ Preprocessing done')
             print(f'--- Train target shape {y_train.shape} ---')
             print(f'--- Encoding labels shape {y_labels.shape} ---')
@@ -97,7 +97,7 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
-            X_train_ids = train_seq.ids
+            X_train_ids = train_seq['id']
             save_preproc_data(X_train_ids,X_train_ids_filename)
             # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
             # save_preproc_data(X_train,X_train_filename)
@@ -116,7 +116,7 @@ def preprocess() -> None:
             print(f'\n✅ Raw train terms loaded')
             print(f'--- Train terms with shape {train_terms.shape} ---')
             # Preproc target --> y_train, y_labels
-            y_train, y_labels = encoding_target(train_terms,X_train_ids.ids)
+            y_train, y_labels = encoding_target(train_terms,X_train_ids['id'])
             print(f'\n✅ Preprocessing done')
             print(f'--- Train target shape {y_train.shape} ---')
             print(f'--- Encoding labels shape {y_labels.shape} ---')
@@ -145,6 +145,7 @@ def predict():
 
     # Do prediction
     # y_pred = model.predict(sequence_emb)
+
 
 
 if __name__ == '__main__':
