@@ -183,6 +183,8 @@ def load_train_model(model_filename):
         cache_path = Path(MODEL_DATA_DIR).joinpath(model_filename)
         print(f"\nLoading local model file {model_filename} ...")
         model = load_model(cache_path)
+        print(f"✅ {model_file} loaded from local directory")
+
 
     if STORAGE_MODEL_KEY == 'gcs':
         # Path of model file

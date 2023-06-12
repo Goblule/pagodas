@@ -126,8 +126,25 @@ def preprocess() -> None:
             save_preproc_data(y_labels,y_labels_filename)
 
 def predict():
-    model = load_train_model(MODEL_PROD_NAME)
+
+    # Load production model
+    try:
+        model = load_train_model(MODEL_PROD_NAME)
+    except:
+        print('The model in production does not exist, STOP!')
+
+    # Print the summary
+    print('\nModel summary:\n')
     print(model.summary())
+
+    # Ask for sequence
+    sequence = str(input('\nInsert an aminoacids sequence\n'))
+
+    # Call embedding function
+    # sequence_emb = get_embedding(sequence)
+
+    # Do prediction
+    # y_pred = model.predict(sequence_emb)
 
 
 
