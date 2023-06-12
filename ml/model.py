@@ -1,12 +1,20 @@
 #imports
 import os
 from pathlib import Path
+
 from tensorflow.keras import models, layers, metrics
 from tensorflow.keras.saving import load_model
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.saved_model import contains_saved_model
+from tensorflow.keras.saving import load_model
+from transformers import T5Tokenizer, TFT5EncoderModel
+
 from skmultilearn.adapt import MLkNN
+
 from google.cloud import storage
 from params import *
+
+
 
 #functions
 
@@ -223,3 +231,41 @@ def train_model(model,X_train,y_train,epochs,batch_size,
               verbose=2)
 
     return model, history
+
+
+def load_embedding_model() -> tuple:
+    """
+    This function will load the T5 embedding model and tokenizer
+    pretrained model: 'Rostlab/prot_t5_xl_half_uniref50-enc'
+    RETURNS a tuple: (tokenizer, model)
+    """
+
+    model_path = Path(MODEL_DATA_DIR).joinpath('embedding_model.tf')
+
+    # If the model isn't saved to local, perform the load + save
+    if not contains_saved_model(model_path):
+        print("Model not saved in local --> saving ...")
+        save_embedding_model_to_local()
+
+    tokenizer = T5Tokenizer.from_pretrained('Rostlab/prot_t5_xl_half_uniref50-enc', do_lower_case=False)
+    embedding_model = load_model(model_path)
+
+    print("returning model")
+    return tokenizer, embedding_model
+
+
+def save_embedding_model_to_local():
+    """
+    This function loads the T5 embedding model from pretrained and directly
+    saves it to local
+    model name: 'Rostlab/prot_t5_xl_half_uniref50-enc'
+    returns nothing
+    NOTE: the model is 11gb heavy
+    """
+
+    model_path = Path(MODEL_DATA_DIR).joinpath('embedding_model.tf')
+
+    embedding_model = TFT5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_half_uniref50-enc", from_pt=True)
+    # save full model to local storage
+    embedding_model.save(model_path)
+    print(f"saved model to {model_path}")

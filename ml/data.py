@@ -134,7 +134,7 @@ def get_preproc_data(data_filename: str) -> pd.DataFrame:
     if STORAGE_DATA_KEY == 'local':
         cache_path = Path(PREPROC_DATA_DIR).joinpath(data_filename)
         print(f"\nLoading local csv file {data_filename} ...")
-        data = pd.read_csv(cache_path,sep='\t')
+        data = pd.read_csv(cache_path,sep=',')
 
     if STORAGE_DATA_KEY == 'gcs':
         # Path of array file

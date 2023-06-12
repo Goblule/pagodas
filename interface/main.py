@@ -2,8 +2,9 @@
 import numpy as np
 
 from ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
-from ml.model import load_train_model
-from ml.preprocessing import encoding_target
+from ml.preprocessing import encoding_target, get_embedding
+from ml.model import load_train_model, load_embedding_model
+
 from params import *
 from pathlib import Path
 from google.cloud import storage
@@ -51,11 +52,15 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
-            X_train_ids = train_seq.ids
+            X_train_ids = train_seq['id']
+            X_train_seq = train_seq['seq']
             save_preproc_data(X_train_ids,X_train_ids_filename)
-            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
-            # save_preproc_data(X_train,X_train_filename)
-            pass
+            # Load embedding model and launch embedding
+            print("loading embedding model..")
+            model, tokenizer = load_embedding_model()
+            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            save_preproc_data(X_train,X_train_filename)
+
         # y_train
         # Check if files exist
         if (y_train_cache_path.is_file() and y_labels_cache_path.is_file()) :
@@ -97,11 +102,18 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
-            X_train_ids = train_seq['id']
+
+            # Get X_train ids and corresponding embeddings
+            X_train_ids = train_seq['id]
+            X_train_seq = train_seq['seq']
+
             save_preproc_data(X_train_ids,X_train_ids_filename)
-            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
-            # save_preproc_data(X_train,X_train_filename)
-            pass
+            # Load embedding model and launch embedding
+            print("loading embedding model..")
+            model, tokenizer = load_embedding_model()
+            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            save_preproc_data(X_train,X_train_filename)
+
         # y_train
         # Check if files exist in the bucket
         if (storage.Blob(bucket=bucket,name=f'preproc_data/{y_train_filename}').exists(client) and \
