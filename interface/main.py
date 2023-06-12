@@ -2,7 +2,8 @@
 import numpy as np
 
 from ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
-from ml.preprocessing import encoding_target
+from ml.preprocessing import encoding_target, get_embedding
+from ml.model import load_embedding_model
 from params import *
 from pathlib import Path
 from google.cloud import storage
@@ -96,9 +97,12 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
+            # Get X_train ids and corresponding embeddings
             X_train_ids = train_seq.ids
+            X_train_seq = train_seq.seq
             save_preproc_data(X_train_ids,X_train_ids_filename)
-            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
+            model, tokenizer = load_embedding_model()
+            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
             # save_preproc_data(X_train,X_train_filename)
             pass
         # y_train
