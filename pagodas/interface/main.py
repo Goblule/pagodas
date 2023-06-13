@@ -1,11 +1,11 @@
 
 import numpy as np
 
-from ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
-from ml.preprocessing import encoding_target, get_embedding
-from ml.model import load_train_model, load_embedding_model
+from pagodas.ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
+from pagodas.ml.preprocessing import encoding_target, get_embedding
+from pagodas.ml.model import load_train_model, load_embedding_model
 
-from params import *
+from pagodas.params import *
 from pathlib import Path
 from google.cloud import storage
 

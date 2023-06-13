@@ -6,7 +6,7 @@ import seaborn as sns
 import progressbar
 
 from Bio import SeqIO
-from params import *
+from pagodas.params import *
 
 import sentencepiece
 from transformers import T5Tokenizer, TFT5EncoderModel

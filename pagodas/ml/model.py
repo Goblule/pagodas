@@ -12,7 +12,7 @@ from transformers import T5Tokenizer, TFT5EncoderModel
 from skmultilearn.adapt import MLkNN
 
 from google.cloud import storage
-from params import *
+from pagodas.params import *
 
 
 

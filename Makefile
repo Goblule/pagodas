@@ -25,13 +25,13 @@ reset_local_files:
 	mkdir -p preproc_data
 
 run_preprocess:
-	python -c 'from interface.main import preprocess; preprocess()'
+	python -c 'from pagodas.interface.main import preprocess; preprocess()'
   
  run_train_custom_model:
-	python -c 'from interface.main import train_custom_model; train_custom_model()'
+	python -c 'from pagodas.interface.main import train_custom_model; train_custom_model()'
   
 run_predict:
-	python -c 'from interface.main import predict; predict()' 
+	python -c 'from pagodas.interface.main import predict; predict()' 
   
 run_api:
 	uvicorn pagodas.api.fast:app --reload

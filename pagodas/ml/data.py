@@ -6,7 +6,7 @@ import obonet
 
 from Bio import SeqIO
 from pathlib import Path
-from params import *
+from pagodas.params import *
 from google.cloud import storage
 
 
