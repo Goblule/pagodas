@@ -187,11 +187,10 @@ def load_train_model(model_filename):
 
     if STORAGE_MODEL_KEY == 'local':
         # Path of model file
-        model_file = f'models/{model_filename}'
         cache_path = Path(MODEL_DATA_DIR).joinpath(model_filename)
         print(f"\nLoading local model file {model_filename} ...")
         model = load_model(cache_path)
-        print(f"✅ {model_file} loaded from local directory")
+        print(f"✅ loaded {model_filename} from local directory pagodas/models/")
 
 
     if STORAGE_MODEL_KEY == 'gcs':
