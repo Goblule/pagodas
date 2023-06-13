@@ -13,7 +13,7 @@ from google.cloud import storage
 # graph_go, dict_go = read_obo_file(obo_file)
 # print(f'\n✅ Graph from OBO file loaded')
 
-def preprocess() -> None:
+def preprocess():
 
     """
     - loading raw data
@@ -52,10 +52,11 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
+            # Get X_train ids and corresponding embeddings
             X_train_ids = train_seq['id']
-            X_train_seq = train_seq['seq']
             save_preproc_data(X_train_ids,X_train_ids_filename)
             # Load embedding model and launch embedding
+            X_train_seq = train_seq['seq']
             print("loading embedding model..")
             model, tokenizer = load_embedding_model()
             X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
@@ -102,13 +103,11 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
-
             # Get X_train ids and corresponding embeddings
-            X_train_ids = train_seq['id]
-            X_train_seq = train_seq['seq']
-
+            X_train_ids = train_seq['id']
             save_preproc_data(X_train_ids,X_train_ids_filename)
             # Load embedding model and launch embedding
+            X_train_seq = train_seq['seq']
             print("loading embedding model..")
             model, tokenizer = load_embedding_model()
             X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
@@ -137,6 +136,17 @@ def preprocess() -> None:
             save_preproc_data(y_train,y_train_filename)
             save_preproc_data(y_labels,y_labels_filename)
 
+    return X_train, X_train_ids, y_train, y_labels
+
+def train_custom_model():
+    '''
+    This function is a user prompt function to train a specific custom model
+    '''
+    # X_train, X_train_ids, y_train, y_labels = preprocess()
+    flag_model = str(input('\nType the model you want [dense,LSTM,ResLSTM,CNN_LSTM]'))
+
+
+
 def predict():
 
     # Load production model
@@ -161,5 +171,5 @@ def predict():
 
 
 if __name__ == '__main__':
-    preprocess()
+    train_custom_model()
     predict()
