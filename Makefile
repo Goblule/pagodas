@@ -8,6 +8,10 @@ default :
 	@echo '  run_preprocess     run preprocessing on raw data'
 	@echo '  <option>           description'
 	@echo ' '
+	@echo 'API options'
+	@echo '  run_api  					run the api'
+	@echo '  <option>           description'
+	@echo ' '
 
 #################### PACKAGE ACTIONS ###################
 reinstall_package:
@@ -20,3 +24,6 @@ reset_local_files:
 
 run_preprocess:
 	python -c 'from interface.main import preprocess; preprocess()'
+
+run_api:
+	uvicorn pagodas.api.fast:app --reload
