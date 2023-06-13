@@ -4,9 +4,11 @@ default :
 	@echo 'make reinstall_package'
 	@echo ' '
 	@echo 'Package options'
-	@echo '  reset_local_files  clean the preproc_data storage'
-	@echo '  run_preprocess     run preprocessing on raw data'
-	@echo '  <option>           description'
+	@echo '  reset_local_files  		clean the preproc_data storage'
+	@echo '  run_preprocess         	run preprocessing on raw data'
+	@echo '  run_train_custom_model 	train a model defined by the user'
+	@echo '  run_predict        		run prediction on new data'
+	@echo '  <option>           		description'
 	@echo ' '
 	@echo 'API options'
 	@echo '  run_api  					run the api'
@@ -24,6 +26,12 @@ reset_local_files:
 
 run_preprocess:
 	python -c 'from interface.main import preprocess; preprocess()'
-
+  
+ run_train_custom_model:
+	python -c 'from interface.main import train_custom_model; train_custom_model()'
+  
+run_predict:
+	python -c 'from interface.main import predict; predict()' 
+  
 run_api:
 	uvicorn pagodas.api.fast:app --reload

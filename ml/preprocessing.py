@@ -1,12 +1,15 @@
 import pandas as pd
 import numpy as np
-import os
+import os, re
 import matplotlib.pyplot as plt
 import seaborn as sns
 import progressbar
 
 from Bio import SeqIO
 from params import *
+
+import sentencepiece
+from transformers import T5Tokenizer, TFT5EncoderModel
 
 def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_terms.tsv file
                     series_train_protein_ids: pd.Series, # series containing the unique proteins IDs
@@ -50,3 +53,48 @@ def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_term
                     bar.finish()
 
                     return train_labels, labels
+
+
+
+def get_embedding( sequence : str,
+                   embedding_model=None,
+                   tokenizer=None) -> np.ndarray:
+    """
+    Function that generates the embeddings for a SINGLE protein sequence.
+    Input = protein fasta sequence (str)
+    Returns vector of size 1024
+    The current version of this function uses TensorFlow with Pytorch weights (native
+    function to the tranformers library); however, if need be, we can switch to
+    regular pytorch
+    """
+
+    # If tokenizer or embedding_model not instantiated, raise exceptions
+    if not tokenizer:
+        raise Exception("Tokenizer not loaded yet!")
+
+    if not embedding_model:
+        raise Exception("Embedding Model not loaded yet!")
+
+
+    # Replace rare amino acids in sequence with X (aka "any")
+    seq_processed = " ".join(re.sub(r'[UZOB]', 'X', sequence))
+
+    # Encode sequence with tokenizer
+    ids = tokenizer.batch_encode_plus(seq_processed,
+                                      add_special_tokens=True,
+                                      padding="longest",
+                                      return_tensors='tf')
+
+    # Separate ids into input_ids + attention_mask
+    input_ids = ids['input_ids']
+    attention_mask = ids['attention_mask']
+
+    # Generate embeddings
+    embedding_repr = embedding_model(input_ids=input_ids, attention_mask=attention_mask)
+
+
+    # Extract residue embeddings for the first ([0,:]) sequence
+    # in the batch and remove padded & special tokens ([0,:7])
+    embedding_output = [np.mean(e, axis=0) for e in embedding_repr.last_hidden_state] # [0] is the embedding output, others are attention layers
+
+    return embedding_output

@@ -2,7 +2,9 @@
 import numpy as np
 
 from ml.data import load_raw_fasta_file, load_raw_train_terms, clean_raw_fasta_df, get_preproc_data, save_preproc_data
-from ml.preprocessing import encoding_target
+from ml.preprocessing import encoding_target, get_embedding
+from ml.model import load_train_model, load_embedding_model
+
 from params import *
 from pathlib import Path
 from google.cloud import storage
@@ -11,7 +13,7 @@ from google.cloud import storage
 # graph_go, dict_go = read_obo_file(obo_file)
 # print(f'\n✅ Graph from OBO file loaded')
 
-def preprocess() -> None:
+def preprocess():
 
     """
     - loading raw data
@@ -50,11 +52,16 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
-            X_train_ids = train_seq.ids
+            # Get X_train ids and corresponding embeddings
+            X_train_ids = train_seq['id']
             save_preproc_data(X_train_ids,X_train_ids_filename)
-            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
-            # save_preproc_data(X_train,X_train_filename)
-            pass
+            # Load embedding model and launch embedding
+            X_train_seq = train_seq['seq']
+            print("loading embedding model..")
+            model, tokenizer = load_embedding_model()
+            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            save_preproc_data(X_train,X_train_filename)
+
         # y_train
         # Check if files exist
         if (y_train_cache_path.is_file() and y_labels_cache_path.is_file()) :
@@ -96,11 +103,16 @@ def preprocess() -> None:
             train_seq = clean_raw_fasta_df(train_seq)
             print(f'\n✅ Train sequences cleaned')
             print(f'--- Train sequences have now shape {train_seq.shape} ---')
+            # Get X_train ids and corresponding embeddings
             X_train_ids = train_seq['id']
             save_preproc_data(X_train_ids,X_train_ids_filename)
-            # X_train = < TO IMPLEMENT > EMBEDDING FUNCTION
-            # save_preproc_data(X_train,X_train_filename)
-            pass
+            # Load embedding model and launch embedding
+            X_train_seq = train_seq['seq']
+            print("loading embedding model..")
+            model, tokenizer = load_embedding_model()
+            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            save_preproc_data(X_train,X_train_filename)
+
         # y_train
         # Check if files exist in the bucket
         if (storage.Blob(bucket=bucket,name=f'preproc_data/{y_train_filename}').exists(client) and \
@@ -124,6 +136,40 @@ def preprocess() -> None:
             save_preproc_data(y_train,y_train_filename)
             save_preproc_data(y_labels,y_labels_filename)
 
+    return X_train, X_train_ids, y_train, y_labels
+
+def train_custom_model():
+    '''
+    This function is a user prompt function to train a specific custom model
+    '''
+    # X_train, X_train_ids, y_train, y_labels = preprocess()
+    flag_model = str(input('\nType the model you want [dense,LSTM,ResLSTM,CNN_LSTM]'))
+
+
+
+def predict():
+
+    # Load production model
+    try:
+        model = load_train_model(MODEL_PROD_NAME)
+    except:
+        print('The model in production does not exist, STOP!')
+
+    # Print the summary
+    print('\nModel summary:\n')
+    print(model.summary())
+
+    # Ask for sequence
+    sequence = str(input('\nInsert an aminoacids sequence\n'))
+
+    # Call embedding function
+    # sequence_emb = get_embedding(sequence)
+
+    # Do prediction
+    # y_pred = model.predict(sequence_emb)
+
+
 
 if __name__ == '__main__':
-    preprocess()
+    train_custom_model()
+    predict()
