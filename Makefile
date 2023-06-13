@@ -10,6 +10,10 @@ default :
 	@echo '  run_predict        		run prediction on new data'
 	@echo '  <option>           		description'
 	@echo ' '
+	@echo 'API options'
+	@echo '  run_api  					run the api'
+	@echo '  <option>           description'
+	@echo ' '
 
 #################### PACKAGE ACTIONS ###################
 reinstall_package:
@@ -22,11 +26,12 @@ reset_local_files:
 
 run_preprocess:
 	python -c 'from interface.main import preprocess; preprocess()'
-
-
-run_train_custom_model:
+  
+ run_train_custom_model:
 	python -c 'from interface.main import train_custom_model; train_custom_model()'
-
-
+  
 run_predict:
-	python -c 'from interface.main import predict; predict()'
+	python -c 'from interface.main import predict; predict()' 
+  
+run_api:
+	uvicorn pagodas.api.fast:app --reload
