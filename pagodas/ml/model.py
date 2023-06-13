@@ -3,12 +3,10 @@ import os
 from pathlib import Path
 
 from tensorflow.keras import models, layers, metrics
-from tensorflow.keras.saving import load_model
+from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.saved_model import contains_saved_model
-from tensorflow.keras.saving import load_model
 from transformers import T5Tokenizer, TFT5EncoderModel
-
 from skmultilearn.adapt import MLkNN
 
 from google.cloud import storage
@@ -188,10 +186,11 @@ def load_train_model(model_filename):
     STORAGE_DATA_KEY (local, gcs).'''
 
     if STORAGE_MODEL_KEY == 'local':
+        # Path of model file
         cache_path = Path(MODEL_DATA_DIR).joinpath(model_filename)
         print(f"\nLoading local model file {model_filename} ...")
         model = load_model(cache_path)
-        print(f"✅ {model_file} loaded from local directory")
+        print(f"✅ loaded {model_filename} from local directory pagodas/models/")
 
 
     if STORAGE_MODEL_KEY == 'gcs':

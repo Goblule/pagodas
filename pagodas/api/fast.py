@@ -3,11 +3,14 @@ import numpy as np
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pagodas.ml.model.py import load_train_model
-from pagodas.ml.preprocessing import embedd
+from pagodas.ml.model import load_train_model
+from pagodas.ml.preprocessing import get_embedding
+import warnings
+from pagodas.params import *
 
+warnings.filterwarnings("ignore")
 app = FastAPI()
-app.state.model = load_train_model()
+app.state.trained_model = load_train_model(MODEL_PROD_NAME)
 # Allowing all middleware is optional, but good practice for dev purposes
 app.add_middleware(
     CORSMiddleware,
@@ -34,7 +37,7 @@ def predict(
     X = pd.DataFrame(dico)
 
     #Embedd the protein sequence
-    X_embedded = embedd(X)
+    X_embedded = get_embedding(X)
 
     #initialize model
     model = app.state.model
