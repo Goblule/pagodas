@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import networkx
 import obonet
+from pysam import FastaFile
 
 from Bio import SeqIO
 from pathlib import Path
@@ -35,6 +36,31 @@ def load_raw_obo_file() -> tuple :
 
     return graph, id_to_name
 
+
+def load_fasta_file(fasta_file) -> pd.DataFrame:
+    #define the FASTA file
+    fasta = Path(RAW_DATA_DIR).joinpath(fasta_file)
+
+    # read FASTA file
+    sequences_o = FastaFile(fasta)
+
+    #initialization
+    sequences = []
+    lengths = []
+    regions = []
+
+    #loop over the references/regions
+    for region in sequences_o.references:
+        regions.append(region)
+        sequences.append(sequences_o.fetch(region=region))
+        lengths.append(len(sequences_o.fetch(region=region)))
+
+    #create the dictionary
+    dico = {'sequence' : sequences, 'length' : lengths, 'id' : regions}
+    #create the DataFrame
+    df = pd.DataFrame(dico)
+    return df
+
 def load_raw_fasta_file() -> pd.DataFrame:
 
     '''
@@ -45,20 +71,25 @@ def load_raw_fasta_file() -> pd.DataFrame:
     if STORAGE_DATA_KEY == 'local':
         train_seq_file = Path(RAW_DATA_DIR).joinpath('train_sequences.fasta')
         with open(train_seq_file) as fastafile:
+
+            # Initialize empty lists
             headers = []
             sequences = []
-            ids= []
+            ids = []
             entries = []
             lengths = []
 
+            # Loop to append the different lists
             for entry in SeqIO.parse(fastafile, 'fasta'):
                 headers.append(entry.description)
                 sequences.append(entry.seq)
                 entries.append(entry)
                 ids.append(entry.id)
+
             # Convert sequences (list of chars) to strings
             sequences = [str(x) for x in sequences]
             lengths = [len(x) for x in sequences]
+
             # Create dataframe
             df_fasta = pd.DataFrame({'id':id, 'header':headers, 'seq':sequences, 'length':lengths})
 
@@ -73,19 +104,24 @@ def load_raw_fasta_file() -> pd.DataFrame:
         blob_train_seq = bucket.get_blob(train_seq_file)
         # Read blob
         with blob_train_seq.open('r') as fastafile:
+
+            # Initialize empty lists
             headers = []
             sequences = []
             ids= []
             entries = []
             lengths = []
 
+            # Loop to append the different lists
             for entry in SeqIO.parse(fastafile, 'fasta'):
                 headers.append(entry.description)
                 sequences.append(entry.seq)
                 entries.append(entry)
                 ids.append(entry.id)
+
             # Convert sequences (list of chars) to strings
             sequences = [str(x) for x in sequences]
+
             # Create dataframe
             df_fasta = pd.DataFrame({'id':ids, 'header':headers, 'seq':sequences, 'length':lengths})
 
