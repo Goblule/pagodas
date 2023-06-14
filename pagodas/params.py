@@ -24,3 +24,7 @@ MODEL_DATA_DIR = os.path.join('.', 'models')
 
 # MODEL
 MODEL_PROD_NAME = os.environ.get('MODEL_PROD_NAME') # Name of the model in production
+
+#GOOGLE CLOUD RUN
+GCR_IMAGE = os.environ.get("GCR_IMAGE")
+GCR_REGION = os.environ.get("GCR_REGION")

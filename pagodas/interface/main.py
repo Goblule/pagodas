@@ -60,7 +60,7 @@ def preprocess():
             X_train_seq = train_seq['seq']
             print("loading embedding model..")
             model, tokenizer = load_embedding_model()
-            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            X_train = [get_embedding(sequence=seq, embedding_model=model, tokenizer=tokenizer) for seq in X_train_seq]
             save_preproc_data(X_train,X_train_filename)
 
         # y_train
@@ -111,7 +111,7 @@ def preprocess():
             X_train_seq = train_seq['seq']
             print("loading embedding model..")
             model, tokenizer = load_embedding_model()
-            X_train = [get_embedding(sequence=seq, model=model, tokenizer=tokenizer) for seq in X_train_seq]
+            X_train = [get_embedding(sequence=seq, embedding_model=model, tokenizer=tokenizer) for seq in X_train_seq]
             save_preproc_data(X_train,X_train_filename)
 
         # y_train

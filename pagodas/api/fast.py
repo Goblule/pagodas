@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pagodas.ml.model import load_train_model
 from pagodas.ml.preprocessing import get_embedding
-from pagodas.ml.data import load_fasta_file
+from pagodas.ml.data import load_fasta_file,load_raw_obo_file
 from pagodas.params import *
 
 logging.getLogger('tensorflow').disabled = True
@@ -37,11 +37,25 @@ def predict(protein_sequence: str):
     train_seq_df = load_fasta_file('train_sequences.fasta')
     print('loaded fasta file')
 
+    #Read the OBO file to get the different definitions of the GO terms
+    graph, id_to_name = load_raw_obo_file()
+    #print(type(id_to_name))
+    #print(type(graph))
+    print(id_to_name['GO:0000001'])
+
     #Path
     train_path = Path(PREPROC_DATA_DIR).joinpath('train_embeds.npy')
     train_ids_path = Path(PREPROC_DATA_DIR).joinpath('train_ids.npy')
     y_labels_path = Path(PREPROC_DATA_DIR).joinpath('y_labels_1500.npy')
+    IA_path = os.path.join('.', 'raw_data','IA.csv')
     print('created paths')
+
+    #Read the Information Accretion file
+    IA_file = pd.read_csv(IA_path)
+    IA_file.set_index('go_term',inplace=True)
+    print('loaded the IA file')
+    print(IA_file.head())
+    print(IA_file['weight'].get('GO:0000002'))
 
     #Load the local embeddings
     X_train = np.load(train_path)
@@ -95,12 +109,23 @@ def predict(protein_sequence: str):
     df_pred.rename(columns={0:'Proba','index':'Function'},inplace=True)
     df_pred.sort_values(by=['Proba'],inplace=True,ascending=False)
     df_pred.reset_index(inplace=True,drop=True)
-    df_pred = df_pred[df_pred['Proba']>0.3]
+    df_pred = df_pred[df_pred['Proba']>0.01]
     print('organized the prediction')
 
+    df_pred['Proba'] = df_pred['Proba'].astype(float)
+
+    dico = {key:(id_to_name[key],
+                 round(float(IA_file['weight'].get(key)),4)*round(float(value),4),
+                 round(float(value),4)) for key,value in zip(df_pred['Function'],
+                                                             df_pred['Proba'])}
+
+    df = pd.DataFrame(dico)
+    print(df.head())
+    df.sort_values(by=1, axis=1,inplace=True,ascending=False)
+    df.rename(index={0: "function_name", 1: "weighted_probability", 2: "probability"},inplace=True)
 
     #return the protein functions
-    return {key:round(float(value),4) for key,value in zip(df_pred['Function'],df_pred['Proba'])}
+    return df
 
 
 @app.get("/")
