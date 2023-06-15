@@ -9,4 +9,9 @@ setup(name='pagodas',
       version="1.0",
       install_requires=requirements,
       packages=find_packages(),
-      test_suite="tests")
+      test_suite="tests",
+      license="MIT",
+      url="https://github.com/Goblule/pagodas",
+      # include_package_data: to install data from MANIFEST.in
+      include_package_data=True,
+      zip_safe=False)

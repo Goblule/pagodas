@@ -6,8 +6,8 @@ from tensorflow.keras import models, layers, metrics
 from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.saved_model import contains_saved_model
-from transformers import T5Tokenizer, TFT5EncoderModel
-from skmultilearn.adapt import MLkNN
+#from transformers import T5Tokenizer, TFT5EncoderModel
+#from skmultilearn.adapt import MLkNN
 
 from google.cloud import storage
 from pagodas.params import *
@@ -16,10 +16,10 @@ from pagodas.params import *
 
 #functions
 
-def MlkNN(neighbors):
-    #instanciate the KNN classifier
-    classifier = MLkNN(k=neighbors)
-    return classifier
+#def MlkNN(neighbors):
+#    #instanciate the KNN classifier
+#    classifier = MLkNN(k=neighbors)
+#    return classifier
 
 def dense(n_layers:int,input_neurons:int):
 

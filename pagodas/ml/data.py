@@ -91,7 +91,7 @@ def load_raw_fasta_file() -> pd.DataFrame:
             lengths = [len(x) for x in sequences]
 
             # Create dataframe
-            df_fasta = pd.DataFrame({'id':id, 'header':headers, 'seq':sequences, 'length':lengths})
+            df_fasta = pd.DataFrame({'id':ids, 'header':headers, 'seq':sequences, 'length':lengths})
 
     if STORAGE_DATA_KEY == 'gcs':
         # Path of fasta file

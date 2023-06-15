@@ -6,5 +6,6 @@ prediction_data/
 pagodas.egg-info/
 __pycache__
 .env
+.env.yaml
 .envrc
 models/
