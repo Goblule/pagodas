@@ -109,6 +109,7 @@ def predict(protein_sequence: str):
     df_pred.rename(columns={0:'Proba','index':'Function'},inplace=True)
     df_pred.sort_values(by=['Proba'],inplace=True,ascending=False)
     df_pred.reset_index(inplace=True,drop=True)
+
     df_pred = df_pred[df_pred['Proba']>0.01]
     print('organized the prediction')
 
@@ -126,7 +127,6 @@ def predict(protein_sequence: str):
 
     #return the protein functions
     return df
-
 
 @app.get("/")
 def root():
