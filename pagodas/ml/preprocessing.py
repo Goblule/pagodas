@@ -1,15 +1,14 @@
 import pandas as pd
 import numpy as np
 import os, re
-import matplotlib.pyplot as plt
-import seaborn as sns
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 import progressbar
 
-from Bio import SeqIO
+#from Bio import SeqIO
 from pagodas.params import *
-
-import sentencepiece
-from transformers import T5Tokenizer, TFT5EncoderModel
+#import sentencepiece
+#from transformers import T5Tokenizer, TFT5EncoderModel
 
 def encoding_target(train_terms: pd.DataFrame, # raw train terms from train_terms.tsv file
                     series_train_protein_ids: pd.Series, # series containing the unique proteins IDs
