@@ -1,16 +1,10 @@
 # 🏯 Pagodas
 ## Protein Annotation _by_ Gene Ontology _through_ Deep _learning_ Automated System
 
-<!-- some vertical space -->
-$$\\[.2in]$$
-
 ## Contributors
 [Julien Tetar](https://github.com/Goblule),
 [Erika Fallacara](https://github.com/erikafallacara),
 [Victor M'Baye](https://github.com/VeMBe06)
-
-<!-- some vertical space -->
-$$\\[.2in]$$
 
 <!-- TABLE OF CONTENTS -->
 <!--  <details>  -->
@@ -30,9 +24,6 @@ $$\\[.2in]$$
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 <!-- </details>  -->
-
-<!-- some vertical space -->
-$$\\[.2in]$$
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
