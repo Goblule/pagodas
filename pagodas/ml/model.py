@@ -6,7 +6,9 @@ from tensorflow.keras import models, layers, metrics
 from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.saved_model import contains_saved_model
-#from transformers import T5Tokenizer, TFT5EncoderModel
+from tensorflow.keras.models import load_model
+
+from transformers import T5Tokenizer, TFT5EncoderModel
 #from skmultilearn.adapt import MLkNN
 
 from google.cloud import storage
@@ -250,7 +252,7 @@ def load_embedding_model() -> tuple:
     embedding_model = load_model(model_path)
 
     print("returning model")
-    return tokenizer, embedding_model
+    return embedding_model, tokenizer
 
 
 def save_embedding_model_to_local():
