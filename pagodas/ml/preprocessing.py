@@ -76,7 +76,7 @@ def get_embedding( sequence : str,
 
 
     # Replace rare amino acids in sequence with X (aka "any")
-    seq_processed = " ".join(re.sub(r'[UZOB]', 'X', sequence))
+    seq_processed = [" ".join(re.sub(r'[UZOB]', 'X', sequence))]
 
     # Encode sequence with tokenizer
     ids = tokenizer.batch_encode_plus(seq_processed,
@@ -96,4 +96,4 @@ def get_embedding( sequence : str,
     # in the batch and remove padded & special tokens ([0,:7])
     embedding_output = [np.mean(e, axis=0) for e in embedding_repr.last_hidden_state] # [0] is the embedding output, others are attention layers
 
-    return embedding_output
+    return embedding_output[0]
